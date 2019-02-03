@@ -1,3 +1,4 @@
+#include<termios.h>
 #include<unistd.h>
 
 /*
@@ -9,7 +10,7 @@ What we want is raw mode. Unfortunately, there is no simple switch you can flip 
 turning off a great many flags in the terminal.Major thing is we want to process the keyboard input as we type, which is possible only in raw
 mode and not in canonical mode.
 */
-//here we are setting the terminal's attributes
+//here we are setting the terminal's attributes by turning off ECHO feature
 void enableRawMode()
 {
   struct termios raw;
