@@ -29,7 +29,7 @@ void enableRawMode()
   atexit(disableRawMode);
 
   struct termios raw = orig_termios;//copying orig_termios to raw.
-  raw.c_lflag &= ~(ICRNL | IXON);//IXON turns off 'Ctrl-S' and 'Ctrl-Q' signals, where 'Ctrl-S' stops data from being transmitted to the terminal until you press 'Ctrl-Q'.
+  raw.c_lflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);//IXON turns off 'Ctrl-S' and 'Ctrl-Q' signals, where 'Ctrl-S' stops data from being transmitted to the terminal until you press 'Ctrl-Q'.
   raw.c_lflag &= ~(OPOST); //OPOST turns off all output processing features by turning off the OPOST flag. In practice, the "\n" to "\r\n" translation is likely the only
                            //output processing feature turned on by default.
   raw.c_lflag &= ~(ECHO | ICANON | IEXTEN |ISIG); //Because of ICANON program will quit as soon as you press 'q'. Now the program doesn't wait for you to press 'q' and
