@@ -38,6 +38,8 @@ void enableRawMode()
                                    //IEXTEN turns off the terminal which waits for you to type another character and then sends that character literally.
                                    //ICRNL turns off the terminal which is helpfully translating any carriage returns (13, '\r') inputted by the user into newlines (10, '\n') and
                                    //now Ctrl-M is read as a 13 (carriage return), and the Enter key is also read as a 13.
+  raw.c_cc[VMIN] = 0;
+  raw.c_cc[VTIME] = 1;
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw); //TCSAFLUSH -> doesn't take any input after we press 'q', it just ignores it.
 }
 
@@ -47,9 +49,10 @@ int main()
 {
   enableRawMode();
 
-  char c;
-  while(read(STDIN_FILENO, &c, 1) == 1 && c!='q') //1 here is one byte..we are telling it to read 1 byte in loop until 'q' is typed
+  while(1) //1 here is one byte..we are telling it to read 1 byte in loop until 'q' is typed
   {
+    char c = '\0';
+    read(STDIN_FILENO, &c, 1);
     /* iscntrl() tests whether a character is a control character. Control characters are nonprintable characters that we don’t want to
     print to the screen. ASCII codes 0–31 are all control characters, and 127 is also a control character. ASCII codes 32–126 are all
     printable.*/
@@ -60,6 +63,10 @@ int main()
     else
     {
       printf("%d ('%c')\r\n", c, c);
+    }
+    if(c == 'q')//'q' is to quit
+    {
+      break;
     }
   }
 
