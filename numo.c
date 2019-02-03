@@ -1,8 +1,10 @@
 #include<termios.h>
 #include<unistd.h>
 #include<stdlib.h>
+#include<ctype.h>
+#include<stdio.h>
 
-struct termios orig_termios;
+struct termios orig_termios;//global struct
 
 void disableRawMode()
 {
@@ -26,8 +28,9 @@ void enableRawMode()
   tcgetattr(STDIN_FILENO, &orig_termios);
   atexit(disableRawMode);
 
-  struct termios raw = orig_termios;
-  raw.c_lflag &= ~(ECHO);
+  struct termios raw = orig_termios;//copying orig_termios to raw.
+  raw.c_lflag &= ~(ECHO | ICANON); //Because of ICANON program will quit as soon as you press 'q'. Now the program doesn't wait for you to press 'q' and
+                                   //then press 'ENTER' to quit. This means we will finally be reading input byte-by-byte, instead of line-by-line.
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw); //TCSAFLUSH -> doesn't take any input after we press 'q', it just ignores it.
 }
 
@@ -38,6 +41,17 @@ int main()
   enableRawMode();
 
   char c;
-  while(read(STDIN_FILENO, &c, 1) == 1 && c!='q'); //1 here is one byte..we are telling it to read 1 byte in loop until 'q' is typed
+  while(read(STDIN_FILENO, &c, 1) == 1 && c!='q') //1 here is one byte..we are telling it to read 1 byte in loop until 'q' is typed
+  {
+    if(iscntrl(c))
+    {
+      printf("%d\n", c);
+    }
+    else
+    {
+      printf("%d ('%c')\n", c, c);
+    }
+  }
+
   return 0;
 }
