@@ -1,5 +1,13 @@
 #include<termios.h>
 #include<unistd.h>
+#include<stdlib.h>
+
+struct termios orig_termios;
+
+void disableRawMode()
+{
+  tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+}
 
 /*
 By default your terminal starts in canonical mode, also called cooked mode. In this mode, keyboard input is only sent to your program when
@@ -9,15 +17,21 @@ more complex user interfaces, like text editors. We want to process each keypres
 What we want is raw mode. Unfortunately, there is no simple switch you can flip to set the terminal to raw mode. Raw mode is achieved by
 turning off a great many flags in the terminal.Major thing is we want to process the keyboard input as we type, which is possible only in raw
 mode and not in canonical mode.
+
+here we are setting the terminal's attributes by turning off ECHO feature(means it nomore prints in terminal -> only when program is running,
+not for other commands)
 */
-//here we are setting the terminal's attributes by turning off ECHO feature(means it nomore prints in terminal)
 void enableRawMode()
 {
-  struct termios raw;
-  tcgetattr(STDIN_FILENO, &raw);
+  tcgetattr(STDIN_FILENO, &orig_termios);
+  atexit(disableRawMode);
+
+  struct termios raw = orig_termios;
   raw.c_lflag &= ~(ECHO);
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
+
+
 
 int main()
 {
