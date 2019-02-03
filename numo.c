@@ -28,7 +28,7 @@ void enableRawMode()
 
   struct termios raw = orig_termios;
   raw.c_lflag &= ~(ECHO);
-  tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+  tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw); //TCSAFLUSH -> doesn't take any input after we press 'q', it just ignores it.
 }
 
 
