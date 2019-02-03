@@ -29,11 +29,15 @@ void enableRawMode()
   atexit(disableRawMode);
 
   struct termios raw = orig_termios;//copying orig_termios to raw.
-  raw.c_lflag &= ~(IXON);//IXON turns off 'Ctrl-S' and 'Ctrl-Q' signals, where 'Ctrl-S' stops data from being transmitted to the terminal until you press 'Ctrl-Q'.
+  raw.c_lflag &= ~(ICRNL | IXON);//IXON turns off 'Ctrl-S' and 'Ctrl-Q' signals, where 'Ctrl-S' stops data from being transmitted to the terminal until you press 'Ctrl-Q'.
+  raw.c_lflag &= ~(OPOST); //OPOST turns off all output processing features by turning off the OPOST flag. In practice, the "\n" to "\r\n" translation is likely the only
+                           //output processing feature turned on by default.
   raw.c_lflag &= ~(ECHO | ICANON | IEXTEN |ISIG); //Because of ICANON program will quit as soon as you press 'q'. Now the program doesn't wait for you to press 'q' and
                                    //then press 'ENTER' to quit. This means we will finally be reading input byte-by-byte, instead of line-by-line.
                                    //ISIG turns off 'Ctrl-C' and 'Ctrl-Z' signals which used to terminate the programs
                                    //IEXTEN turns off the terminal which waits for you to type another character and then sends that character literally.
+                                   //ICRNL turns off the terminal which is helpfully translating any carriage returns (13, '\r') inputted by the user into newlines (10, '\n') and
+                                   //now Ctrl-M is read as a 13 (carriage return), and the Enter key is also read as a 13.
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw); //TCSAFLUSH -> doesn't take any input after we press 'q', it just ignores it.
 }
 
@@ -55,7 +59,7 @@ int main()
     }
     else
     {
-      printf("%d ('%c')\n", c, c);
+      printf("%d ('%c')\r\n", c, c);
     }
   }
 
