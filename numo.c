@@ -3,12 +3,20 @@
 #include<stdlib.h>
 #include<ctype.h>
 #include<stdio.h>
+#include<errno.h>
 
 struct termios orig_termios;//global struct
 
+void die(const char *s)
+{
+  perror(s);
+  exit(1);
+}
+
 void disableRawMode()
 {
-  tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+  if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1)
+  die("tcsetattr");
 }
 
 /*
@@ -25,7 +33,7 @@ not for other commands)
 */
 void enableRawMode()
 {
-  tcgetattr(STDIN_FILENO, &orig_termios);
+  if(tcgetattr(STDIN_FILENO, &orig_termios) == -1) die("tcgetattr");
   atexit(disableRawMode);
 
   struct termios raw = orig_termios;//copying orig_termios to raw.
@@ -40,7 +48,7 @@ void enableRawMode()
                                    //now Ctrl-M is read as a 13 (carriage return), and the Enter key is also read as a 13.
   raw.c_cc[VMIN] = 0;
   raw.c_cc[VTIME] = 1;
-  tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw); //TCSAFLUSH -> doesn't take any input after we press 'q', it just ignores it.
+  if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) die("tcsetattr"); //TCSAFLUSH -> doesn't take any input after we press 'q', it just ignores it.
 }
 
 
@@ -52,7 +60,7 @@ int main()
   while(1) //1 here is one byte..we are telling it to read 1 byte in loop until 'q' is typed
   {
     char c = '\0';
-    read(STDIN_FILENO, &c, 1);
+    if(read(STDIN_FILENO, &c, 1) == -1 && errno != EAGAIN) die("read");
     /* iscntrl() tests whether a character is a control character. Control characters are nonprintable characters that we don’t want to
     print to the screen. ASCII codes 0–31 are all control characters, and 127 is also a control character. ASCII codes 32–126 are all
     printable.*/
