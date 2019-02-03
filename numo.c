@@ -29,8 +29,11 @@ void enableRawMode()
   atexit(disableRawMode);
 
   struct termios raw = orig_termios;//copying orig_termios to raw.
-  raw.c_lflag &= ~(ECHO | ICANON); //Because of ICANON program will quit as soon as you press 'q'. Now the program doesn't wait for you to press 'q' and
+  raw.c_lflag &= ~(IXON);//IXON turns off 'Ctrl-S' and 'Ctrl-Q' signals, where 'Ctrl-S' stops data from being transmitted to the terminal until you press 'Ctrl-Q'.
+  raw.c_lflag &= ~(ECHO | ICANON | IEXTEN |ISIG); //Because of ICANON program will quit as soon as you press 'q'. Now the program doesn't wait for you to press 'q' and
                                    //then press 'ENTER' to quit. This means we will finally be reading input byte-by-byte, instead of line-by-line.
+                                   //ISIG turns off 'Ctrl-C' and 'Ctrl-Z' signals which used to terminate the programs
+                                   //IEXTEN turns off the terminal which waits for you to type another character and then sends that character literally.
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw); //TCSAFLUSH -> doesn't take any input after we press 'q', it just ignores it.
 }
 
