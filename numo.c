@@ -5,7 +5,7 @@
 #include<stdio.h>
 #include<errno.h>
 
-struct termios orig_termios;//global struct
+struct termios orig_termios;//global structure
 
 void die(const char *s)
 {
